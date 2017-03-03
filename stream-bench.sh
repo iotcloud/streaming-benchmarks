@@ -19,16 +19,20 @@ STORM_VERSION=${STORM_VERSION:-"0.9.7"}
 FLINK_VERSION=${FLINK_VERSION:-"1.2.0"}
 SPARK_VERSION=${SPARK_VERSION:-"1.6.2"}
 APEX_VERSION=${APEX_VERSION:-"3.4.0"}
+HERON_VERSION=${HERON_VERSION:-"0.14.5"}
 
 STORM_DIR="apache-storm-$STORM_VERSION"
+HERON_DIR="heron-client-install-$HERON_VERSION-ubuntu"
 REDIS_DIR="redis-$REDIS_VERSION"
 KAFKA_DIR="kafka_$SCALA_BIN_VERSION-$KAFKA_VERSION"
 FLINK_DIR="flink-$FLINK_VERSION"
 SPARK_DIR="spark-$SPARK_VERSION-bin-hadoop2.6"
 APEX_DIR="apex-$APEX_VERSION"
+HERON_INSTALL_DIR=heron-local
 
 #Get one of the closet apache mirrors
 APACHE_MIRROR=$(curl 'https://www.apache.org/dyn/closer.cgi' |   grep -o '<strong>[^<]*</strong>' |   sed 's/<[^>]*>//g' |   head -1)
+TWITTER_HERON_DOWNLOAD="https://github.com/twitter/heron/releases/download"
 
 ZK_HOST="localhost"
 ZK_PORT="2181"
@@ -37,6 +41,7 @@ TOPIC=${TOPIC:-"ad-events"}
 PARTITIONS=${PARTITIONS:-1}
 LOAD=${LOAD:-1000}
 CONF_FILE=./conf/localConf.yaml
+CONF_FILE_HERON=`pwd`/conf/localConf.yaml
 TEST_TIME=${TEST_TIME:-240}
 
 pid_match() {
@@ -78,6 +83,30 @@ stop_if_needed() {
   else
     echo "No $name instance found to stop"
   fi
+}
+
+fetch_sh_file() {
+  local FILE="download-cache/$1"
+  local URL=$2
+  if [[ -e "$FILE" ]];
+  then
+    echo "Using cached File $FILE"
+  else
+	mkdir -p download-cache/
+    WGET=`whereis wget`
+    CURL=`whereis curl`
+    if [ -n "$WGET" ];
+    then
+      wget -O "$FILE" "$URL"
+    elif [ -n "$CURL" ];
+    then
+      curl -o "$FILE" "$URL"
+    else
+      echo "Please install curl or wget to continue.";
+      exit 1
+    fi
+  fi
+  chmod +x "$FILE"
 }
 
 fetch_untar_file() {
@@ -162,6 +191,11 @@ run() {
     STORM_FILE="$STORM_DIR.tar.gz"
     fetch_untar_file "$STORM_FILE" "$APACHE_MIRROR/storm/$STORM_DIR/$STORM_FILE"
 
+    HERON_FILE="$HERON_DIR.sh"
+    fetch_sh_file "$HERON_FILE" "$TWITTER_HERON_DOWNLOAD/$HERON_VERSION/$HERON_FILE"
+    chmod +x download-cache/$HERON_FILE
+    ./download-cache/$HERON_FILE --prefix=`pwd`/$HERON_INSTALL_DIR
+
     #Fetch Flink
     FLINK_FILE="$FLINK_DIR-bin-hadoop27-scala_${SCALA_BIN_VERSION}.tgz"
     fetch_untar_file "$FLINK_FILE" "$APACHE_MIRROR/flink/flink-$FLINK_VERSION/$FLINK_FILE"
@@ -242,6 +276,16 @@ run() {
   then
     "$STORM_DIR/bin/storm" kill -w 0 test-topo || true
     sleep 10
+  elif [ "START_HERON_TOPOLOGY" = "$OPERATION" ];
+  then
+    echo "Submitting heron topology"
+    ./$HERON_INSTALL_DIR/bin/heron submit local ./heron-benchmarks/target/heron-benchmarks-0.1.0.jar heron.benchmark.AdvertisingTopology test-topo -conf $CONF_FILE_HERON
+    sleep 15
+  elif [ "STOP_HERON_TOPOLOGY" = "$OPERATION" ];
+  then
+    echo "Killing heron topology"
+    ./$HERON_INSTALL_DIR/bin/heron kill local test-topo
+    sleep 15
   elif [ "START_SPARK_PROCESSING" = "$OPERATION" ];
   then
     "$SPARK_DIR/bin/spark-submit" --master spark://localhost:7077 --class spark.benchmark.KafkaRedisAdvertisingStream ./spark-benchmarks/target/spark-benchmarks-0.1.0.jar "$CONF_FILE" &
@@ -298,6 +342,19 @@ run() {
     run "STOP_KAFKA"
     run "STOP_REDIS"
     run "STOP_ZK"
+  elif [ "HERON_TEST" = "$OPERATION" ];
+  then
+    run "START_ZK"
+    run "START_REDIS"
+    run "START_KAFKA"
+#    run "START_HERON_TOPOLOGY"
+#    run "START_LOAD"
+#    sleep $TEST_TIME
+#    run "STOP_LOAD"
+#    run "STOP_HERON_TOPOLOGY"
+#    run "STOP_KAFKA"
+#    run "STOP_REDIS"
+#    run "STOP_ZK"
   elif [ "FLINK_TEST" = "$OPERATION" ];
   then
     run "START_ZK"
