@@ -279,7 +279,7 @@ run() {
   elif [ "START_HERON_TOPOLOGY" = "$OPERATION" ];
   then
     echo "Submitting heron topology"
-    ./$HERON_INSTALL_DIR/bin/heron submit local ./heron-benchmarks/target/heron-benchmarks-0.1.0.jar heron.benchmark.AdvertisingTopology test-topo -conf $CONF_FILE_HERON
+    ./$HERON_INSTALL_DIR/bin/heron submit local ./heron-benchmarks/target/heron-benchmarks-0.1.0-jar-with-dependencies.jar heron.benchmark.AdvertisingTopology test-topo -conf $CONF_FILE_HERON
     sleep 15
   elif [ "STOP_HERON_TOPOLOGY" = "$OPERATION" ];
   then
