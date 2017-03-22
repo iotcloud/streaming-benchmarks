@@ -234,6 +234,10 @@ public class AdvertisingTopology {
         .fieldsGrouping("redis_join", new Fields("campaign_id"));
 
     Config conf = new Config();
+    conf.put("storm.zookeeper.session.timeout", 20000);
+    conf.put("storm.zookeeper.connection.timeout", 15000);
+    conf.put("storm.zookeeper.retry.times", 5);
+    conf.put("storm.zookeeper.retry.interval", 1000);
 
     if (args != null && args.length > 2) {
       conf.setNumStmgrs(stmgrs);
@@ -243,7 +247,7 @@ public class AdvertisingTopology {
 
       LocalCluster cluster = new LocalCluster();
       cluster.submitTopology("test", conf, builder.createTopology());
-      backtype.storm.utils.Utils.sleep(10000);
+      backtype.storm.utils.Utils.sleep(100000);
       cluster.killTopology("test");
       cluster.shutdown();
     }

@@ -279,7 +279,7 @@ run() {
   elif [ "START_HERON_TOPOLOGY" = "$OPERATION" ];
   then
     echo "Submitting heron topology"
-    ./$HERON_INSTALL_DIR/bin/heron submit local ./heron-benchmarks/target/heron-benchmarks-0.1.0.jar heron.benchmark.AdvertisingTopology test-topo -conf $CONF_FILE_HERON
+    ./$HERON_INSTALL_DIR/bin/heron submit local ./heron-benchmarks/target/heron-benchmarks-0.1.0-jar-with-dependencies.jar heron.benchmark.AdvertisingTopology test-topo -conf $CONF_FILE_HERON
     sleep 15
   elif [ "STOP_HERON_TOPOLOGY" = "$OPERATION" ];
   then
@@ -347,14 +347,14 @@ run() {
     run "START_ZK"
     run "START_REDIS"
     run "START_KAFKA"
-#    run "START_HERON_TOPOLOGY"
-#    run "START_LOAD"
-#    sleep $TEST_TIME
-#    run "STOP_LOAD"
-#    run "STOP_HERON_TOPOLOGY"
-#    run "STOP_KAFKA"
-#    run "STOP_REDIS"
-#    run "STOP_ZK"
+    run "START_HERON_TOPOLOGY"
+    run "START_LOAD"
+    sleep $TEST_TIME
+    run "STOP_LOAD"
+    run "STOP_HERON_TOPOLOGY"
+    run "STOP_KAFKA"
+    run "STOP_REDIS"
+    run "STOP_ZK"
   elif [ "FLINK_TEST" = "$OPERATION" ];
   then
     run "START_ZK"
@@ -407,6 +407,7 @@ run() {
     run "STOP_FLINK"
     run "STOP_STORM_TOPOLOGY"
     run "STOP_STORM"
+    run "STOP_HERON_TOPOLOGY"
     run "STOP_KAFKA"
     run "STOP_REDIS"
     run "STOP_ZK"
