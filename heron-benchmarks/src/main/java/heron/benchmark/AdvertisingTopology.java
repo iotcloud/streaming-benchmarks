@@ -213,10 +213,9 @@ public class AdvertisingTopology {
     String redisServerHost = (String)commonConfig.get("redis.host");
     String kafkaTopic = (String)commonConfig.get("kafka.topic");
     int kafkaPartitions = ((Number)commonConfig.get("kafka.partitions")).intValue();
-    int workers = ((Number)commonConfig.get("storm.workers")).intValue();
-    int ackers = ((Number)commonConfig.get("storm.ackers")).intValue();
-    int cores = ((Number)commonConfig.get("process.cores")).intValue();
-    int parallel = Math.max(1, cores/7);
+    int stmgrs = ((Number)commonConfig.get("heron.stmgrs")).intValue();
+    int cores = ((Number)commonConfig.get("heron.parallel")).intValue();
+    int parallel = Math.max(1, cores);
 
     ZkHosts hosts = new ZkHosts(zkServerHosts);
 
@@ -237,8 +236,7 @@ public class AdvertisingTopology {
     Config conf = new Config();
 
     if (args != null && args.length > 2) {
-      conf.setNumWorkers(workers);
-      conf.setNumAckers(ackers);
+      conf.setNumStmgrs(stmgrs);
       StormSubmitter.submitTopology(args[0], conf, builder.createTopology());
     }
     else {
