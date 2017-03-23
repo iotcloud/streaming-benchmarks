@@ -7,6 +7,7 @@ package benchmark.common.advertising;
 public class Window {
     public String timestamp;
     public Long seenCount;
+    public Long lastUpdate;
 
     @Override
     public boolean equals(Object other) {

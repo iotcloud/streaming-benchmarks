@@ -58,6 +58,7 @@ public class CampaignProcessorCommon {
         Long timeBucket = Long.parseLong(event_time) / time_divisor;
         Window window = getWindow(timeBucket, campaign_id);
         window.seenCount++;
+        window.lastUpdate = System.currentTimeMillis();
 
         CampaignWindowPair newPair = new CampaignWindowPair(campaign_id, window);
         synchronized(need_flush) {
@@ -84,8 +85,8 @@ public class CampaignProcessorCommon {
             flush_jedis.hincrBy(windowUUID, "seen_count", win.seenCount);
             win.seenCount = 0L;
         }
-        flush_jedis.hset(windowUUID, "time_updated", Long.toString(System.currentTimeMillis()));
-        flush_jedis.lpush("time_updated", Long.toString(System.currentTimeMillis()));
+        flush_jedis.hset(windowUUID, "time_updated", Long.toString(win.lastUpdate));
+        flush_jedis.lpush("time_updated", Long.toString(win.lastUpdate));
     }
 
     public void flushWindows() {
