@@ -150,7 +150,7 @@ public class GeneratorSpout extends BaseRichSpout{
 
     Long time = emitTimes.remove(o.toString());
     if (time != null) {
-      times.add(System.nanoTime() - time);
+      times.add(System.currentTimeMillis() - time);
     }
 
     if (messagesSendCount == maxSend && ackCount == maxSend) {
@@ -166,7 +166,7 @@ public class GeneratorSpout extends BaseRichSpout{
 
     Long time = emitTimes.remove(o.toString());
     if (time != null) {
-      times.add(System.nanoTime() - time);
+      times.add(System.currentTimeMillis() - time);
     }
 
     if (messagesSendCount == maxSend && ackCount == maxSend) {
