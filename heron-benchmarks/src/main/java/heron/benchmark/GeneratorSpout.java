@@ -73,7 +73,7 @@ public class GeneratorSpout extends BaseRichSpout{
   @Override
   public void nextTuple() {
     long now = System.nanoTime();
-    if (messagesSendCount < maxSend && (sendGap > now - lastSendTime)) {
+    if (messagesSendCount < maxSend && (sendGap < now - lastSendTime)) {
       lastSendTime = now;
       if (sendGap * 2 < (now - lastSendTime)) {
         increasingGapCount++;
