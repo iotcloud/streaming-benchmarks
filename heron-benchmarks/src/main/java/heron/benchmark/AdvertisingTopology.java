@@ -216,6 +216,10 @@ public class AdvertisingTopology {
     int stmgrs = ((Number)commonConfig.get("heron.stmgrs")).intValue();
     int cores = ((Number)commonConfig.get("heron.parallel")).intValue();
     int parallel = Math.max(1, cores);
+    int maxSend = ((Number)commonConfig.get("message.count")).intValue();
+    int messagesPerSecond = ((Number)commonConfig.get("message.rate")).intValue();
+    String saveFile = (String) commonConfig.get("save.file");
+    String addsFile = (String) commonConfig.get("ads.file");
 
     ZkHosts hosts = new ZkHosts(zkServerHosts);
 
@@ -223,9 +227,11 @@ public class AdvertisingTopology {
     spoutConfig.scheme = new SchemeAsMultiScheme(new StringScheme());
     spoutConfig.zkServers = (List<String>)commonConfig.get("zookeeper.servers");
     spoutConfig.zkPort = (Integer)commonConfig.get("zookeeper.port");
-    KafkaSpout kafkaSpout = new KafkaSpout(spoutConfig);
+//    KafkaSpout kafkaSpout = new KafkaSpout(spoutConfig);
 
-    builder.setSpout("ads", kafkaSpout, kafkaPartitions);
+    // builder.setSpout("ads", kafkaSpout, kafkaPartitions);
+    GeneratorSpout genSpout = new GeneratorSpout();
+    builder.setSpout("ads", genSpout);
     builder.setBolt("event_deserializer", new DeserializeBolt(), parallel).shuffleGrouping("ads");
     builder.setBolt("event_filter", new EventFilterBolt(), parallel).shuffleGrouping("event_deserializer");
     builder.setBolt("event_projection", new EventProjectionBolt(), parallel).shuffleGrouping("event_filter");
@@ -238,6 +244,10 @@ public class AdvertisingTopology {
     conf.put("storm.zookeeper.connection.timeout", 15000);
     conf.put("storm.zookeeper.retry.times", 5);
     conf.put("storm.zookeeper.retry.interval", 1000);
+    conf.put("message.count", maxSend);
+    conf.put("message.rate", messagesPerSecond);
+    conf.put("save.file", saveFile);
+    conf.put("ads.file", addsFile);
 
     if (args != null && args.length > 2) {
       conf.setNumStmgrs(stmgrs);

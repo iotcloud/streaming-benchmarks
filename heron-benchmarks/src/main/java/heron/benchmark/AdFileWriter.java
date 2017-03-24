@@ -10,26 +10,32 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class AdFileWriter {
-  private String redisServerHost;
   private Jedis jedis;
   private String saveFile;
 
   public AdFileWriter(String redisServerHost, String saveFile) {
-    this.redisServerHost = redisServerHost;
+    this.jedis = new Jedis(redisServerHost);
+    this.saveFile = saveFile;
   }
 
-  public List<String> readCampaigns(String redisServerHost) {
-    Set<String> campaigns = jedis.smembers("campaigns");
+  public Map<String, String> newSetup() {
+    String[] campaigns = new String[100];
+    for (int i = 0; i < 100; i++) {
+      campaigns[i] = UUID.randomUUID().toString();
+    }
+    jedis.sadd("campaigns", campaigns);
+
+    Set<String> campaignSet = jedis.smembers("campaigns");
     Map<String, String> adsToCampaigns = new HashMap<String, String>();
-    int total = campaigns.size() * 10;
-    for (String c : campaigns) {
+    for (String c : campaignSet) {
       for (int i = 0; i < 10; i++) {
         String ad = UUID.randomUUID().toString();
         jedis.set(ad, c);
         adsToCampaigns.put(ad, c);
       }
     }
-    return null;
+
+    return adsToCampaigns;
   }
 
   private void writeAdsToCampaigns(Map<String, String> adsToCampaigns) {
@@ -55,5 +61,10 @@ public class AdFileWriter {
     Map commonConfig = Utils.findAndReadConfigFile(configPath, true);
 
     String redisServerHost = (String)commonConfig.get("redis.host");
+    String adsFile = (String) commonConfig.get("ads.file");
+
+    AdFileWriter adFileWriter = new AdFileWriter(redisServerHost,adsFile);
+    Map<String,String> adsToCampaigns = adFileWriter.newSetup();
+    adFileWriter.writeAdsToCampaigns(adsToCampaigns);
   }
 }

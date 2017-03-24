@@ -68,10 +68,10 @@ public class GeneratorSpout extends BaseRichSpout{
     long now = System.nanoTime();
     if (messagesSendCount < maxSend && (sendGap > now - lastSendTime)) {
       lastSendTime = now;
-      if (sendGap > (now - lastSendTime) / 2) {
+      if (sendGap * 2 < (now - lastSendTime)) {
         increasingGapCount++;
         if (increasingGapCount > 10) {
-          System.out.printf("WARNING: Increasing gap between the messages");
+          System.out.println("WARNING: Increasing gap between the messages");
         }
       } else {
         increasingGapCount = 0;
@@ -80,11 +80,12 @@ public class GeneratorSpout extends BaseRichSpout{
       String user_id = getRandom(userIds);
       String page_id = getRandom(pageIds);
       String addType = getRandom(ad_types);
+      String eventType = getRandom(event_types);
       String value = "{\"user_id\": \"" + user_id +
       "\", \"page_id\": \"" + page_id +
       "\", \"ad_id\": \"" + getRandom(ads) +
       "\", \"ad_type\": \"" + addType +
-      "\", \"event_type\": \"" + getRandom(event_types) +
+      "\", \"event_type\": \"" + eventType +
       "\", \"event_time\": \"" + System.currentTimeMillis() +
       "\", \"ip_address\": \"1.2.3.4\"}";
       messagesSendCount++;
@@ -92,7 +93,7 @@ public class GeneratorSpout extends BaseRichSpout{
       String id = UUID.randomUUID().toString();
       long emitTime = System.currentTimeMillis();
 
-      if (addType.equals("view")) {
+      if (eventType.equals("view")) {
         emitTimes.put(id, emitTime);
       }
 
@@ -131,6 +132,12 @@ public class GeneratorSpout extends BaseRichSpout{
   @Override
   public void ack(Object o) {
     ackCount++;
+
+    Long time = emitTimes.remove(o.toString());
+    if (time != null) {
+      times.add(System.nanoTime() - time);
+    }
+
     if (messagesSendCount == maxSend && ackCount == maxSend) {
       writeResults();
     }
@@ -142,7 +149,7 @@ public class GeneratorSpout extends BaseRichSpout{
     ackCount++;
     System.out.println("Tuple failed: " + o.toString());
 
-    Long time = emitTimes.remove(o);
+    Long time = emitTimes.remove(o.toString());
     if (time != null) {
       times.add(System.nanoTime() - time);
     }
