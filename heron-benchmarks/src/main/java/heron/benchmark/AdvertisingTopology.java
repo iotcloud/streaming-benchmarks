@@ -233,7 +233,7 @@ public class AdvertisingTopology {
 
     // builder.setSpout("ads", kafkaSpout, kafkaPartitions);
     GeneratorSpout genSpout = new GeneratorSpout();
-    builder.setSpout("ads", genSpout);
+    builder.setSpout("ads", genSpout, kafkaPartitions);
     builder.setBolt("event_deserializer", new DeserializeBolt(), parallel).shuffleGrouping("ads");
     builder.setBolt("event_filter", new EventFilterBolt(), parallel).shuffleGrouping("event_deserializer");
     builder.setBolt("event_projection", new EventProjectionBolt(), parallel).shuffleGrouping("event_filter");
