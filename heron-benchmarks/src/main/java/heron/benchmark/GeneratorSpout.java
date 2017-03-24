@@ -6,11 +6,14 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import org.apache.storm.tuple.Values;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.*;
 
 public class GeneratorSpout extends BaseRichSpout{
+  private static Logger LOG = LoggerFactory.getLogger(GeneratorSpout.class);
   private Map<String, Long> emitTimes = new HashMap<String, Long>();
   private List<Long> times = new ArrayList<Long>();
   private int maxSend;
@@ -75,7 +78,7 @@ public class GeneratorSpout extends BaseRichSpout{
       if (sendGap * 2 < (now - lastSendTime)) {
         increasingGapCount++;
         if (increasingGapCount > 10) {
-          System.out.println("WARNING: Increasing gap between the messages");
+          LOG.warn("Increasing gap between the messages");
         }
       } else {
         increasingGapCount = 0;
@@ -102,6 +105,10 @@ public class GeneratorSpout extends BaseRichSpout{
       }
 
       collector.emit(new Values(value), id);
+
+      if (debug && messagesSendCount % printInterval == 0) {
+        LOG.info("Message count: " + messagesSendCount);
+      }
     }
   }
 
@@ -138,7 +145,7 @@ public class GeneratorSpout extends BaseRichSpout{
     ackCount++;
 
     if (debug && ackCount % printInterval == 0) {
-      System.out.println("Ack count: " + ackCount);
+      LOG.info("Ack count: " + ackCount);
     }
 
     Long time = emitTimes.remove(o.toString());
