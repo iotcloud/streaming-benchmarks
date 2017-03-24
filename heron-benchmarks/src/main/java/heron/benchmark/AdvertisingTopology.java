@@ -252,7 +252,8 @@ public class AdvertisingTopology {
     conf.put("ads.file", addsFile);
     conf.put("debug", debug);
     conf.put("print.interval", printInterval);
-
+    conf.setEnableAcking(true);
+    conf.setMaxSpoutPending(100);
     if (args != null && args.length > 2) {
       conf.setNumStmgrs(stmgrs);
       StormSubmitter.submitTopology(args[0], conf, builder.createTopology());
