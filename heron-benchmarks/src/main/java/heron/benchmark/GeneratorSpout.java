@@ -98,7 +98,7 @@ public class GeneratorSpout extends BaseRichSpout{
       messagesSendCount++;
 
       String id = UUID.randomUUID().toString();
-      long emitTime = System.currentTimeMillis();
+      long emitTime = System.nanoTime();
 
       if (eventType.equals("view")) {
         emitTimes.put(id, emitTime);
@@ -150,7 +150,7 @@ public class GeneratorSpout extends BaseRichSpout{
 
     Long time = emitTimes.remove(o.toString());
     if (time != null) {
-      times.add(System.currentTimeMillis() - time);
+      times.add(System.nanoTime() - time);
     }
 
     if (messagesSendCount == maxSend && ackCount == maxSend) {
@@ -166,7 +166,7 @@ public class GeneratorSpout extends BaseRichSpout{
 
     Long time = emitTimes.remove(o.toString());
     if (time != null) {
-      times.add(System.currentTimeMillis() - time);
+      times.add(System.nanoTime() - time);
     }
 
     if (messagesSendCount == maxSend && ackCount == maxSend) {
