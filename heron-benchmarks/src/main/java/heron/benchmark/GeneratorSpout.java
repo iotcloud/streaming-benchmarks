@@ -36,6 +36,7 @@ public class GeneratorSpout extends BaseRichSpout{
   private Random random;
   private SpoutOutputCollector collector;
   private long lastSendTime;
+  private int spoutIndex;
 
   private void generateIds() {
     for (int i = 0; i < userIds.length; i++) {
@@ -67,6 +68,7 @@ public class GeneratorSpout extends BaseRichSpout{
     sendGap = 1000000000 / messagesPerSecond;
     lastSendTime = System.nanoTime();
     random = new Random();
+    spoutIndex = topologyContext.getThisTaskIndex();
     generateIds();
   }
 
@@ -115,7 +117,7 @@ public class GeneratorSpout extends BaseRichSpout{
   private void writeResults() {
     PrintWriter writer = null;
     try {
-      writer = new PrintWriter(new FileWriter(saveFile + "_" + maxSend + "_" + messagesPerSecond));
+      writer = new PrintWriter(new FileWriter(spoutIndex + "_" + saveFile + "_" + maxSend + "_" + messagesPerSecond));
       for(Long str: times) {
         writer.println(str);
       }
