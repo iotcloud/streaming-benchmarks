@@ -117,7 +117,7 @@ public class GeneratorSpout extends BaseRichSpout{
   private void writeResults() {
     PrintWriter writer = null;
     try {
-      writer = new PrintWriter(new FileWriter(spoutIndex + "_" + saveFile + "_" + maxSend + "_" + messagesPerSecond));
+      writer = new PrintWriter(new FileWriter(saveFile + "_" + spoutIndex +  "_" + maxSend + "_" + messagesPerSecond));
       for(Long str: times) {
         writer.println(str);
       }
