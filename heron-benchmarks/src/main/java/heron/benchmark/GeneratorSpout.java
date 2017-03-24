@@ -25,6 +25,8 @@ public class GeneratorSpout extends BaseRichSpout{
   private String[] userIds = new String[100];
   private String[] pageIds = new String[100];
   private String[] ads;
+  private boolean debug;
+  private int printInterval;
 
   private long sendGap = 0;
 
@@ -53,6 +55,8 @@ public class GeneratorSpout extends BaseRichSpout{
     messagesPerSecond = (Integer) map.get("message.rate");
     saveFile = (String) map.get("save.file");
     addsFile = (String) map.get("ads.file");
+    debug = (Boolean) map.get("debug");
+    printInterval = (Integer) map.get("print.interval");
 
     List<String> adsList = readAdsFile(addsFile);
     ads = adsList.toArray(new String[adsList.size()]);
@@ -132,6 +136,10 @@ public class GeneratorSpout extends BaseRichSpout{
   @Override
   public void ack(Object o) {
     ackCount++;
+
+    if (debug && ackCount % printInterval == 0) {
+      System.out.println("Ack count: " + ackCount);
+    }
 
     Long time = emitTimes.remove(o.toString());
     if (time != null) {

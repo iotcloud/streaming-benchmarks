@@ -220,6 +220,8 @@ public class AdvertisingTopology {
     int messagesPerSecond = ((Number)commonConfig.get("message.rate")).intValue();
     String saveFile = (String) commonConfig.get("save.file");
     String addsFile = (String) commonConfig.get("ads.file");
+    boolean debug = ((String) commonConfig.get("debug")).equals("true");
+    int printInterval = ((Number)commonConfig.get("print.interval")).intValue();
 
     ZkHosts hosts = new ZkHosts(zkServerHosts);
 
