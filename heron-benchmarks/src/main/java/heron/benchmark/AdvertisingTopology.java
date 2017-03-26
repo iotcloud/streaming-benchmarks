@@ -217,6 +217,7 @@ public class AdvertisingTopology {
     int cores = ((Number)commonConfig.get("heron.parallel")).intValue();
     int parallel = Math.max(1, cores);
     int maxSend = ((Number)commonConfig.get("message.count")).intValue();
+    int maxPending = ((Number)commonConfig.get("heron.max.pending")).intValue();
     int messagesPerSecond = ((Number)commonConfig.get("message.rate")).intValue();
     String saveFile = (String) commonConfig.get("save.file");
     String addsFile = (String) commonConfig.get("ads.file");
@@ -253,7 +254,7 @@ public class AdvertisingTopology {
     conf.put("debug", debug);
     conf.put("print.interval", printInterval);
     conf.setEnableAcking(true);
-    conf.setMaxSpoutPending(100);
+    conf.setMaxSpoutPending(maxPending);
     if (args != null && args.length > 2) {
       conf.setNumStmgrs(stmgrs);
       StormSubmitter.submitTopology(args[0], conf, builder.createTopology());
